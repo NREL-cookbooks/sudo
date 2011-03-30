@@ -19,3 +19,8 @@
 
 default[:authorization][:sudo][:groups] = Array.new 
 default[:authorization][:sudo][:users] = Array.new
+
+# Put /sbin in the default sudo path so chef-client can work through sudo.
+# Otherwise some things aren't found in RedHat:
+# http://tickets.opscode.com/browse/OHAI-87
+default[:authorization][:sudo][:secure_path] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

@@ -20,3 +20,39 @@
 package "sudo" do
   action :upgrade
 end
+
+# If sudo needs a custom PATH set and we're currently running chef-client
+# inside sudo, force set this new PATH variable. Our replacement for
+# /etc/sudoers will fix this for future runs, but in the current run, we still
+# need to fix this environment variable. This fixes run issues with /sbin
+# missing from RHEL: http://tickets.opscode.com/browse/OHAI-87
+if(node[:authorization][:sudo][:secure_path] && ENV["SUDO_USER"] && node[:authorization][:sudo][:secure_path] != ENV["PATH"])
+  ENV["PATH"] = node[:authorization][:sudo][:secure_path]
+
+  # With the new PATH in place, reload all the Ohai settings. This will make
+  # sure the node[:ipaddress] is picked up on RHEL systems.
+  ohai = Ohai::System.new
+  ohai.all_plugins
+  node.automatic_attrs.merge! ohai.data
+end
+
+# Install the sudoers template into a temporary location.
+template "#{Chef::Config[:file_cache_path]}/sudoers" do
+  source "sudoers.erb"
+  mode "0440"
+  owner "root"
+  group "root"
+  backup false
+end
+
+template "/etc/sudoers" do
+  # Only install the real file if the temp copy passes visudo's check. This
+  # should hopefully prevent us from totally breaking sudo during all this
+  # automation.
+  only_if "visudo -c -f #{Chef::Config[:file_cache_path]}/sudoers", :environment => { "PATH" => "/usr/sbin:/usr/bin:/sbin:/bin" }
+
+  source "sudoers.erb"
+  mode "0440"
+  owner "root"
+  group "root"
+end
