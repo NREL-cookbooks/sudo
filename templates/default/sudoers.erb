@@ -89,6 +89,9 @@ root    ALL=(ALL)       ALL
 %UnixISODesktopAdmins   ALL=(ALL)       ALL
 %UnixISOServerAdmins    ALL=(ALL)       ALL
 
+# RSA
+%rsa  ALL=(ALL)       ALL
+
 ## Same thing without a password
 # %wheel        ALL=(ALL)       NOPASSWD: ALL
 
@@ -100,4 +103,4 @@ root    ALL=(ALL)       ALL
 # %users  localhost=/sbin/shutdown -h now
 
 # Allow our group to reload a few processes needed during site deployments.
-%AFDC\ Developers ALL = NOPASSWD: /sbin/service httpd reload, /etc/init.d/monit stop, /etc/init.d/monit start, /usr/bin/monit
+%AFDC\ Developers ALL = NOPASSWD: /sbin/service httpd reload, /etc/init.d/monit stop, /etc/init.d/monit start, /usr/bin/monit, /usr/bin/supervisorctl
