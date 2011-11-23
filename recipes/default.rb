@@ -21,6 +21,14 @@ package "sudo" do
   action :upgrade
 end
 
+# When using RVM, force it onto the sudo path so installed gems can be run via
+# sudo. Previous version of RVM used to install binary wrappers into
+# /usr/local/bin, so sudo picked up on them, but newer versions of RVM don't
+# seem to to do this.
+if(node[:recipes].include?("rvm::install") || node.recipe?("rvm::install"))
+  node.set[:authorization][:sudo][:secure_path] = "/srv/developer/rvm/bin:#{node[:authorization][:sudo][:secure_path]}"
+end
+
 # If sudo needs a custom PATH set and we're currently running chef-client
 # inside sudo, force set this new PATH variable. Our replacement for
 # /etc/sudoers will fix this for future runs, but in the current run, we still
