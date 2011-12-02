@@ -26,7 +26,11 @@ end
 # /usr/local/bin, so sudo picked up on them, but newer versions of RVM don't
 # seem to to do this.
 if(node[:recipes].include?("rvm::install") || node.recipe?("rvm::install"))
-  node.set[:authorization][:sudo][:secure_path] = "/srv/developer/rvm/bin:#{node[:authorization][:sudo][:secure_path]}"
+  # Add the RVM path, but only if it doesn't already exist. This array uniq
+  # approach deals with nodes where this had gotten appended multiple times.
+  path = "/srv/developer/rvm/bin:#{node[:authorization][:sudo][:secure_path]}"
+  path = path.split(":").uniq.join(":")
+  node.set[:authorization][:sudo][:secure_path] = path
 end
 
 # If sudo needs a custom PATH set and we're currently running chef-client
