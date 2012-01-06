@@ -28,7 +28,7 @@ end
 if(node[:recipes].include?("rvm::install") || node.recipe?("rvm::install"))
   # Add the RVM path, but only if it doesn't already exist. This array uniq
   # approach deals with nodes where this had gotten appended multiple times.
-  path = "/srv/developer/rvm/bin:#{node[:authorization][:sudo][:secure_path]}"
+  path = "/usr/local/rvm/bin:#{node[:authorization][:sudo][:secure_path]}"
   path = path.split(":").uniq.join(":")
   node.set[:authorization][:sudo][:secure_path] = path
 end
