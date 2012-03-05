@@ -33,6 +33,20 @@ if(node[:recipes].include?("rvm::install") || node.recipe?("rvm::install"))
   node.set[:authorization][:sudo][:secure_path] = path
 end
 
+if(node[:recipes].include?("subversion::collabnet_client") || node.recipe?("subversion::collabnet_client"))
+  # Add the Collabnet path, but only if it doesn't already exist.
+  path = "#{node[:subversion][:collabnet][:prefix]}/bin:#{node[:authorization][:sudo][:secure_path]}"
+  path = path.split(":").uniq.join(":")
+  node.set[:authorization][:sudo][:secure_path] = path
+end
+
+if(node[:recipes].include?("postgresql::server_redhat") || node.recipe?("postgresql::server_redhat"))
+  # Add the postgresql path, but only if it doesn't already exist.
+  path = "#{node[:postgresql][:prefix]}/bin:#{node[:authorization][:sudo][:secure_path]}"
+  path = path.split(":").uniq.join(":")
+  node.set[:authorization][:sudo][:secure_path] = path
+end
+
 # If sudo needs a custom PATH set and we're currently running chef-client
 # inside sudo, force set this new PATH variable. Our replacement for
 # /etc/sudoers will fix this for future runs, but in the current run, we still
