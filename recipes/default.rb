@@ -2,7 +2,7 @@
 # Cookbook Name:: sudo
 # Recipe:: default
 #
-# Copyright 2008-2009, Opscode, Inc.
+# Copyright 2008-2011, Opscode, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,48 +18,24 @@
 #
 
 package "sudo" do
-  action :upgrade
+  action platform?("freebsd") ? :install : :upgrade
 end
 
-# When using RVM, force it onto the sudo path so installed gems can be run via
-# sudo. Previous version of RVM used to install binary wrappers into
-# /usr/local/bin, so sudo picked up on them, but newer versions of RVM don't
-# seem to to do this.
-if(node[:recipes].include?("rvm::install") || node.recipe?("rvm::install"))
-  # Add the RVM path, but only if it doesn't already exist. This array uniq
-  # approach deals with nodes where this had gotten appended multiple times.
-  path = "/usr/local/rvm/bin:#{node[:authorization][:sudo][:secure_path]}"
-  path = path.split(":").uniq.join(":")
-  node.set[:authorization][:sudo][:secure_path] = path
-end
-
-if(node[:recipes].include?("subversion::collabnet_client") || node.recipe?("subversion::collabnet_client"))
-  # Add the Collabnet path, but only if it doesn't already exist.
-  path = "#{node[:subversion][:collabnet][:prefix]}/bin:#{node[:authorization][:sudo][:secure_path]}"
-  path = path.split(":").uniq.join(":")
-  node.set[:authorization][:sudo][:secure_path] = path
-end
-
-if(node[:recipes].include?("postgresql::server_redhat") || node.recipe?("postgresql::server_redhat"))
-  # Add the postgresql path, but only if it doesn't already exist.
-  path = "#{node[:postgresql][:prefix]}/bin:#{node[:authorization][:sudo][:secure_path]}"
-  path = path.split(":").uniq.join(":")
-  node.set[:authorization][:sudo][:secure_path] = path
-end
-
-# If sudo needs a custom PATH set and we're currently running chef-client
-# inside sudo, force set this new PATH variable. Our replacement for
-# /etc/sudoers will fix this for future runs, but in the current run, we still
-# need to fix this environment variable. This fixes run issues with /sbin
-# missing from RHEL: http://tickets.opscode.com/browse/OHAI-87
-if(node[:authorization][:sudo][:secure_path] && ENV["SUDO_USER"] && node[:authorization][:sudo][:secure_path] != ENV["PATH"])
-  ENV["PATH"] = node[:authorization][:sudo][:secure_path]
-
-  # With the new PATH in place, reload all the Ohai settings. This will make
-  # sure the node[:ipaddress] is picked up on RHEL systems.
-  ohai = Ohai::System.new
-  ohai.all_plugins
-  node.automatic_attrs.merge! ohai.data
+if node['authorization']['sudo']['include_sudoers_d']
+  directory "/etc/sudoers.d" do
+    mode 0755
+    owner "root"
+    group "root"
+    action :create
+  end
+  cookbook_file "/etc/sudoers.d/README" do
+    cookbook "sudo"
+    source "README.sudoers"
+    mode 0440
+    owner "root"
+    group "root"
+    action :create
+  end
 end
 
 # Install the sudoers template into a temporary location.
@@ -69,6 +45,12 @@ template "#{Chef::Config[:file_cache_path]}/sudoers" do
   owner "root"
   group "root"
   backup false
+  variables(
+    :sudoers_groups => node['authorization']['sudo']['groups'],
+    :sudoers_users => node['authorization']['sudo']['users'],
+    :passwordless => node['authorization']['sudo']['passwordless'],
+    :include_sudoers_d => node['authorization']['sudo']['include_sudoers_d']
+  )
 end
 
 template "/etc/sudoers" do
@@ -78,7 +60,13 @@ template "/etc/sudoers" do
   only_if "visudo -c -f #{Chef::Config[:file_cache_path]}/sudoers", :environment => { "PATH" => "/usr/sbin:/usr/bin:/sbin:/bin" }
 
   source "sudoers.erb"
-  mode "0440"
+  mode 0440
   owner "root"
-  group "root"
+  group platform?("freebsd") ? "wheel" : "root"
+  variables(
+    :sudoers_groups => node['authorization']['sudo']['groups'],
+    :sudoers_users => node['authorization']['sudo']['users'],
+    :passwordless => node['authorization']['sudo']['passwordless'],
+    :include_sudoers_d => node['authorization']['sudo']['include_sudoers_d']
+  )
 end
