@@ -67,6 +67,7 @@ def render_sudo_template new_resource
     # check if the sudoers file already exists, and only
     # overwrite if the sudoers file has been changed
     if sudoers_updated? tmpfile_path, new_resource.name
+      Chef::Log.info "sudoers.d[/etc/sudoers.d/#{new_resource.name}] updated content"
       FileUtils.mv tmpfile_path, "/etc/sudoers.d/#{new_resource.name}"
       new_resource.updated_by_last_action(true)
     else
@@ -116,6 +117,7 @@ def render_sudo_attributes new_resource
   FileUtils.chmod 0440, tmpfile_path
 
   if sudoers_updated? tmpfile_path, new_resource.name
+    Chef::Log.info "sudoers.d[/etc/sudoers.d/#{new_resource.name}] updated content"
     FileUtils.mv tmpfile_path, "/etc/sudoers.d/#{new_resource.name}"
     new_resource.updated_by_last_action(true)
   else
