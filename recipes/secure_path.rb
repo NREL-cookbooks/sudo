@@ -32,11 +32,13 @@ if(node[:recipes].include?("subversion::collabnet_client") || node.recipe?("subv
   node.set[:authorization][:sudo][:secure_path] = path
 end
 
-if(node[:recipes].include?("postgresql::server_redhat") || node.recipe?("postgresql::server_redhat"))
-  # Add the postgresql path, but only if it doesn't already exist.
-  path = "#{node[:postgresql][:prefix]}/bin:#{node[:authorization][:sudo][:secure_path]}"
-  path = path.split(":").uniq.join(":")
-  node.set[:authorization][:sudo][:secure_path] = path
+if(node[:recipes].include?("postgresql::server") || node.recipe?("postgresql::server"))
+  if(node[:postgresql][:install_repo] == "pgdg")
+    # Add the postgresql path, but only if it doesn't already exist.
+    path = "/usr/pgsql-#{node[:postgresql][:version]}/bin:#{node[:authorization][:sudo][:secure_path]}"
+    path = path.split(":").uniq.join(":")
+    node.set[:authorization][:sudo][:secure_path] = path
+  end
 end
 
 sudo "secure_path" do
