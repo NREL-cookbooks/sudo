@@ -1,0 +1,7 @@
+####################################################################
+##### GENEARTED BY CHEF. LOCAL MODIFICATIONS WILL BE REPLACED. #####
+####################################################################
+
+<% if(node[:authorization][:sudo][:secure_path]) %>
+Defaults    secure_path = "<%= node[:authorization][:sudo][:secure_path] %>"
+<% end %>

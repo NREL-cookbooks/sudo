@@ -21,3 +21,4 @@ default['authorization']['sudo']['groups'] = Array.new
 default['authorization']['sudo']['users'] = Array.new
 default['authorization']['sudo']['passwordless'] = false
 default['authorization']['sudo']['include_sudoers_d'] = false
+default['authorization']['sudo']['secure_path'] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

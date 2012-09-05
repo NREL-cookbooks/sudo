@@ -38,7 +38,27 @@ if node['authorization']['sudo']['include_sudoers_d']
   end
 end
 
+# Install the sudoers template into a temporary location.
+template "#{Chef::Config[:file_cache_path]}/sudoers" do
+  source "sudoers.erb"
+  mode "0440"
+  owner "root"
+  group "root"
+  backup false
+  variables(
+    :sudoers_groups => node['authorization']['sudo']['groups'],
+    :sudoers_users => node['authorization']['sudo']['users'],
+    :passwordless => node['authorization']['sudo']['passwordless'],
+    :include_sudoers_d => node['authorization']['sudo']['include_sudoers_d']
+  )
+end
+
 template "/etc/sudoers" do
+  # Only install the real file if the temp copy passes visudo's check. This
+  # should hopefully prevent us from totally breaking sudo during all this
+  # automation.
+  only_if "visudo -c -f #{Chef::Config[:file_cache_path]}/sudoers", :environment => { "PATH" => "/usr/sbin:/usr/bin:/sbin:/bin" }
+
   source "sudoers.erb"
   mode 0440
   owner "root"
