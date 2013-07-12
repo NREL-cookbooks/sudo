@@ -17,24 +17,24 @@
 # limitations under the License.
 #
 
-package "sudo" do
+package 'sudo' do
   action :install
 end
 
 if node['authorization']['sudo']['include_sudoers_d']
-  directory "/etc/sudoers.d" do
-    mode 0755
-    owner "root"
-    group "root"
-    action :create
+  directory '/etc/sudoers.d' do
+    mode        '0755'
+    owner       'root'
+    group       'root'
+    action      :create
   end
-  cookbook_file "/etc/sudoers.d/README" do
-    cookbook "sudo"
-    source "README.sudoers"
-    mode 0440
-    owner "root"
-    group "root"
-    action :create
+
+  cookbook_file '/etc/sudoers.d/README' do
+    source      'README'
+    mode        '0440'
+    owner       'root'
+    group       'root'
+    action      :create
   end
 end
 
@@ -53,20 +53,22 @@ template "#{Chef::Config[:file_cache_path]}/sudoers" do
   )
 end
 
-template "/etc/sudoers" do
+template '/etc/sudoers' do
   # Only install the real file if the temp copy passes visudo's check. This
   # should hopefully prevent us from totally breaking sudo during all this
   # automation.
   only_if "visudo -c -f #{Chef::Config[:file_cache_path]}/sudoers", :environment => { "PATH" => "/usr/sbin:/usr/bin:/sbin:/bin" }
 
-  source "sudoers.erb"
-  mode 0440
-  owner "root"
-  group platform?("freebsd") ? "wheel" : "root"
+  source 'sudoers.erb'
+  mode '0440'
+  owner 'root'
+  group platform?('freebsd') ? 'wheel' : 'root'
   variables(
     :sudoers_groups => node['authorization']['sudo']['groups'],
     :sudoers_users => node['authorization']['sudo']['users'],
     :passwordless => node['authorization']['sudo']['passwordless'],
-    :include_sudoers_d => node['authorization']['sudo']['include_sudoers_d']
+    :include_sudoers_d => node['authorization']['sudo']['include_sudoers_d'],
+    :agent_forwarding => node['authorization']['sudo']['agent_forwarding'],
+    :sudoers_defaults => node['authorization']['sudo']['sudoers_defaults']
   )
 end
