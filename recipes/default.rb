@@ -49,7 +49,9 @@ template "#{Chef::Config[:file_cache_path]}/sudoers" do
     :sudoers_groups => node['authorization']['sudo']['groups'],
     :sudoers_users => node['authorization']['sudo']['users'],
     :passwordless => node['authorization']['sudo']['passwordless'],
-    :include_sudoers_d => node['authorization']['sudo']['include_sudoers_d']
+    :include_sudoers_d => node['authorization']['sudo']['include_sudoers_d'],
+    :agent_forwarding => node['authorization']['sudo']['agent_forwarding'],
+    :sudoers_defaults => node['authorization']['sudo']['sudoers_defaults']
   )
 end
 
