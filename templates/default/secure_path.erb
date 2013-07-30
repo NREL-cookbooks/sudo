@@ -2,6 +2,6 @@
 ##### GENEARTED BY CHEF. LOCAL MODIFICATIONS WILL BE REPLACED. #####
 ####################################################################
 
-<% if(node[:authorization][:sudo][:secure_path]) %>
-Defaults    secure_path = "<%= node[:authorization][:sudo][:secure_path] %>"
+<% if(@secure_path) %>
+Defaults    secure_path = "<%= @secure_path %>"
 <% end %>

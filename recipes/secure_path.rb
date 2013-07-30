@@ -35,4 +35,7 @@ end
 
 sudo "secure_path" do
   template "secure_path.erb"
+  variables(
+    :secure_path => node[:authorization][:sudo][:secure_path],
+  )
 end
