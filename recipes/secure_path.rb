@@ -25,7 +25,7 @@ if(node.recipe?("subversion::collabnet_client"))
 end
 
 if(node.recipe?("postgresql::server"))
-  if(node[:postgresql][:install_repo] == "pgdg")
+  if(node[:postgresql][:enable_pgdg_yum])
     # Add the postgresql path, but only if it doesn't already exist.
     path = "/usr/pgsql-#{node[:postgresql][:version]}/bin:#{node[:authorization][:sudo][:secure_path]}"
     path = path.split(":").uniq.join(":")
